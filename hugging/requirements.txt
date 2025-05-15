@@ -3,4 +3,4 @@ uvicorn[standard]
 tensorflow
 librosa
 numpy
-soundfile
+scikit-image
