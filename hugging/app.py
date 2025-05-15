@@ -1,77 +1,53 @@
-from fastapi import FastAPI, HTTPException, File, UploadFile
-import numpy as np
+import gradio as gr
 import tensorflow as tf
-import io
 import librosa
+import numpy as np
+from skimage.transform import resize
 
-# Initialize FastAPI app
-app = FastAPI(
-    title="Keras Music Classifier API",
-    version="1.2.0",
-    description="An API for serving predictions from a .keras music classification model. Accepts audio file uploads."
+model = tf.keras.models.load_model("training_model.h5")
+labels = ['blues', 'classical', 'country', 'disco', 'hiphop', 'jazz', 'metal', 'pop', 'reggae', 'rock']
+
+def preprocess_and_predict(audio):
+    if audio is None:
+        return "No audio provided."
+
+    filepath = audio  # gradio provides a temporary filepath
+    y, sr = librosa.load(filepath, sr=None)
+
+    chunk_duration = 4
+    overlap_duration = 2
+    chunk_samples = chunk_duration * sr
+    overlap_samples = overlap_duration * sr
+    step = chunk_samples - overlap_samples
+    num_chunks = int(np.ceil((len(y) - chunk_samples) / step)) + 1
+
+    data = []
+    for i in range(num_chunks):
+        start = i * step
+        chunk = y[start : start + chunk_samples]
+        if len(chunk) < chunk_samples:
+            chunk = np.pad(chunk, (0, chunk_samples - len(chunk)))
+
+        mel_spec = librosa.feature.melspectrogram(y=chunk, sr=sr, n_mels=150)
+        mel_spec_db = librosa.power_to_db(mel_spec, ref=np.max)
+        mel_resized = resize(mel_spec_db[..., np.newaxis], (150, 150, 1), preserve_range=True).astype(np.float32)
+        data.append(mel_resized)
+
+    X = np.array(data)
+    preds = model.predict(X)
+    pred_indices = np.argmax(preds, axis=1)
+    final = np.bincount(pred_indices).argmax()
+
+    return f"Predicted Genre: {labels[final]}"
+
+# Create Gradio interface
+interface = gr.Interface(
+    fn=preprocess_and_predict,
+    inputs=gr.Audio(type="filepath"),
+    outputs="text",
+    title="🎵 GTZAN Music Genre Classifier",
+    description="Upload an audio clip (MP3/WAV). The model splits it into overlapping chunks, predicts each, and returns the most frequent genre."
 )
 
-# Load the Keras model at startup
-MODEL_PATH = "Trained_model.keras"
-try:
-    model = tf.keras.models.load_model(MODEL_PATH)
-except Exception as e:
-    raise RuntimeError(f"Failed to load model from {MODEL_PATH}: {e}")
-
-# Audio processing parameters
-SAMPLE_RATE = 22050         # Hz
-DURATION = 30               # seconds
-SAMPLES_PER_TRACK = SAMPLE_RATE * DURATION
-N_MELS = 128                # mel bands
-
-@app.get("/healthz")
-def health_check():
-    return {"status": "ok"}
-
-@app.post("/predict")
-async def predict(file: UploadFile = File(...)):
-    """
-    Upload an audio file (e.g., WAV, MP3) to get music genre predictions.
-    The audio is loaded, trimmed/padded to {DURATION}s, converted to a Mel-spectrogram,
-    then fed to the model.
-    """
-    try:
-        # Read audio bytes
-        contents = await file.read()
-        data, sr = librosa.load(io.BytesIO(contents), sr=SAMPLE_RATE, mono=True)
-
-        # Trim or pad to fixed length
-        if len(data) > SAMPLES_PER_TRACK:
-            data = data[:SAMPLES_PER_TRACK]
-        else:
-            padding = SAMPLES_PER_TRACK - len(data)
-            data = np.pad(data, (0, padding), mode='constant')
-
-        # Compute Mel-spectrogram
-        mel_spec = librosa.feature.melspectrogram(y=data, sr=sr, n_mels=N_MELS)
-        mel_spec_db = librosa.power_to_db(mel_spec, ref=np.max)
-
-        # Normalize to [0, 1]
-        norm_mel = (mel_spec_db - mel_spec_db.min()) / (mel_spec_db.max() - mel_spec_db.min())
-
-        # Model expects shape: (batch, height, width, channels)
-        input_array = np.expand_dims(norm_mel, axis=(0, -1)).astype(np.float32)
-
-        # Predict
-        preds = model.predict(input_array)
-
-        return {"filename": file.filename, "predictions": preds.tolist()}
-
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Prediction error: {e}")
-
 if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
-
-# Dependencies:
-# pip install fastapi uvicorn tensorflow librosa numpy soundfile
-#
-# Example Usage:
-# curl -X POST "http://localhost:8000/predict" \
-#      -F "file=@path/to/song.mp3"
+    interface.launch()
