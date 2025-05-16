@@ -38,28 +38,75 @@ Our model is a hybrid **CNN–LSTM** model that processes audio as mel-spectrogr
 
 ```
 
-gtzan-music-classifier/
-├── data/                  # GTZAN dataset loader and preprocessing scripts
-│   ├── download.py
-│   ├── preprocess.py
-│   └── augmentations.py
-├── models/                # Model definitions and training scripts
-│   ├── test.py
-│   ├── train.py
-│   └── evaluate.py
-├── app/                   # Flutter/Dart mobile app example
-│   ├── lib/
-│   ├── android/
-│   └── pubspec.yaml
-├── notebooks/             # Jupyter notebooks for exploratory analysis
-│   ├── data\_analysis.ipynb
-│   └── ablation\_study.ipynb
-├── results/               # Saved models, logs, and metrics
-│   ├── weights.h5
-│   ├── metrics.csv
-│   └── confusion\_matrix.png
-├── requirements.txt       # Python dependencies
-└── README.md              # Project overview and instructions
+MLProjectCode/src/         
+├── download.py                  # Download GTZAN dataset
+├── preprocess.py                # Audio preprocessing and feature extraction
+├── augmentations.py             # Data augmentation scripts
+├── train.py                     # Model training script
+├── evaluate.py                  # Model evaluation script
+├── test.py                      # Optional testing utilities
+├── requirements.txt             # Python dependencies
+
+android/                        
+├── AndroidManifest.xml          # Android config (part of Flutter app)
+├── build.gradle                 # Android build file
+└── ...                          # Other native Android project files
+
+assets/                         
+├── gtzan/                       # Raw GTZAN dataset
+├── processed/                   # Preprocessed spectrogram data
+├── model.tflite                 # Converted TFLite model for mobile
+├── weights.h5                   # Trained Keras model weights
+├── metrics.csv                  # Evaluation metrics
+├── confusion_matrix.png         # Confusion matrix plot
+└── spectrogram_sample.png       # Example mel-spectrogram image
+
+build/                          
+└── ...                          # Auto-generated build artifacts
+
+hugging/                        
+└── config.json                  # Config for Hugging Face (optional)
+
+ios/                            
+└── Runner.xcodeproj             # iOS Flutter project config
+
+lib/                            
+├── main.dart                    # Entry point for Flutter app
+└── ...                          # Dart files (UI, controllers, services)
+
+linux/                          
+└── deploy.sh                    # Linux deployment script
+
+macos/                          
+└── deploy.sh                    # macOS deployment script
+
+test/                           
+├── test_main.dart               # Flutter unit tests
+└── test_model.py                # Python model testing script
+
+web/                            
+└── index.html                   # Flutter web build entry point
+
+windows/                        
+└── deploy.bat                   # Windows deployment script
+
+"Apk file Video"/               
+└── demo.mp4                     # Screen recording or demo video of APK in action
+
+LICENSE                          # Project license (Apache 2.0)
+
+MusicClassifier.apk              # Pre-built Android APK for quick testing
+
+README.md                        # Project overview and instructions (you are here)
+
+documentation/                  
+├── report.pdf                   # Final report / paper
+└── architecture_diagram.png     # System architecture diagram
+
+pubspec.yaml                     # Flutter project configuration
+
+pubspec.lock                     # Locked Dart package version
+
 
 ````
 
