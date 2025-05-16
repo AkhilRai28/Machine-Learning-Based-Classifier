@@ -71,20 +71,17 @@ gtzan-music-classifier/
    ```bash
    git clone https://github.com/yourusername/gtzan-music-classifier.git
    cd gtzan-music-classifier
-````
 
 2. **Set up a Python environment**
 
    ```bash
    python3 -m venv venv
    source venv/bin/activate
-   ```
 
 3. **Install dependencies**
 
    ```bash
    pip install -r requirements.txt
-   ```
 
 4. **Download GTZAN dataset**
 
@@ -162,19 +159,3 @@ The app records a short audio clip and displays the predicted genre along with a
 ## 🤝 Contributing
 
 We welcome contributions! Please fork the repo, create a feature branch, and submit a pull request. Whether it’s improving model accuracy, adding new augmentation techniques, or refining the mobile UI, your expertise and ideas are invaluable.
-
----
-
-## 📜 License
-
-This project is released under the **MIT License**. See `LICENSE` for details.
-
----
-
-## 🙏 Acknowledgments
-
-* **GTZAN Dataset** by Tzanetakis & Cook (2002)
-* **Librosa** for audio processing
-* Inspired by CRNN approaches in Choi et al. (2017) and Ghosal & Kolekar (2018)
-
-Thank you for exploring our project. We hope this project inspires further innovation at the intersection of **music** and **machine learning**!
